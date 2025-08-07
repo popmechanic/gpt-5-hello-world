@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { db, syncHelpers } from '../database.js'
-import { useLiveQuery } from 'dexie-react-hooks'
 
 export function AuthPanel() {
   const [email, setEmail] = useState('')
@@ -8,41 +7,35 @@ export function AuthPanel() {
   const [message, setMessage] = useState('')
   const [showAuthForm, setShowAuthForm] = useState(false)
 
-  // Monitor authentication state changes
-  const currentUser = useLiveQuery(() => {
+  // Simplified authentication state - avoid infinite loops
+  const [currentUser, setCurrentUser] = useState({ isLoggedIn: false })
+  const [syncStatus, setSyncStatus] = useState({ isOnline: false, isSyncing: false, phase: 'unknown' })
+
+  // Check auth state on mount and when needed
+  useEffect(() => {
     try {
       const user = syncHelpers.getCurrentUser()
-      // Don't treat "unauthorized" as a valid user
       const isReallyLoggedIn = user.isLoggedIn && user.id !== 'unauthorized'
-      return {
+      setCurrentUser({
         ...user,
         isLoggedIn: isReallyLoggedIn
-      }
-    } catch (error) {
-      return { isLoggedIn: false }
-    }
-  })
+      })
 
-  const syncStatus = useLiveQuery(() => {
-    try {
-      // Check multiple possible sync state locations
       const cloudState = db.cloud.syncState || db.cloud.persistedSyncState || {}
       const phase = cloudState.phase || 'unknown'
-      const userId = db.cloud.currentUserId
-      const isReallyLoggedIn = !!userId && userId !== 'unauthorized'
-      
-      return {
+      setSyncStatus({
         isOnline: phase === 'online' || (isReallyLoggedIn && phase === 'unknown'),
         isSyncing: phase === 'syncing',
         lastSync: cloudState.lastSync,
         phase: phase,
         isLoggedIn: isReallyLoggedIn
-      }
+      })
     } catch (error) {
-      console.log('Sync status error:', error)
-      return { isOnline: false, isSyncing: false, phase: 'error' }
+      console.log('Auth check error:', error)
+      setCurrentUser({ isLoggedIn: false })
+      setSyncStatus({ isOnline: false, isSyncing: false, phase: 'error' })
     }
-  })
+  }, [message]) // Re-check when messages change (after auth attempts)
 
   const handleSignIn = async (e) => {
     e.preventDefault()
