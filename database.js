@@ -1,0 +1,220 @@
+import Dexie from 'dexie'
+import dexieCloud from 'dexie-cloud-addon'
+
+// Configure Dexie Cloud addon
+Dexie.addons.push(dexieCloud)
+
+// Define the database with cloud sync capabilities
+export class PlayfulDataLabDB extends Dexie {
+  constructor() {
+    super('PlayfulDataLabDB', {
+      addons: [dexieCloud]
+    })
+    
+    this.version(1).stores({
+      // Use '@' prefix for auto-generated global IDs that sync across devices
+      notes: '@id, type, title, details, tags, priority, createdAt, _files, owner',
+      images: '@id, type, createdAt, prompt, imageUrl, _files, owner'
+    })
+
+    // Configure cloud sync (will be enabled when cloud database is set up)
+    this.cloud.configure({
+      // For now, we'll use a demo database URL
+      // In production, replace with your actual Dexie Cloud database URL
+      databaseUrl: import.meta.env.VITE_DEXIE_CLOUD_URL || 'https://zgbud0irs.dexie.cloud',
+      tryUseServiceWorker: true,
+      requireAuth: true // Enable authentication to trigger proper sync
+    })
+  }
+}
+
+// Create database instance
+export const db = new PlayfulDataLabDB()
+
+// Enhanced helper functions for notes with sync support
+export const noteHelpers = {
+  // Get all notes for current user, sorted by creation date
+  async getAllNotes() {
+    try {
+      return await db.notes
+        .where('type')
+        .equals('note')
+        .reverse()
+        .sortBy('createdAt')
+    } catch (error) {
+      console.error('Error fetching notes:', error)
+      return []
+    }
+  },
+
+  // Add a new note with sync-compatible structure
+  async addNote(noteData) {
+    try {
+      return await db.notes.add({
+        type: 'note',
+        title: noteData.title || '',
+        details: noteData.details || '',
+        tags: noteData.tags || [],
+        priority: noteData.priority || 'medium',
+        _files: noteData._files || {},
+        createdAt: Date.now(),
+        owner: db.cloud.currentUserId || 'local' // Associate with current user
+      })
+    } catch (error) {
+      console.error('Error adding note:', error)
+      throw error
+    }
+  },
+
+  // Update a note
+  async updateNote(id, updates) {
+    try {
+      return await db.notes.update(id, updates)
+    } catch (error) {
+      console.error('Error updating note:', error)
+      throw error
+    }
+  },
+
+  // Delete a note
+  async deleteNote(id) {
+    try {
+      return await db.notes.delete(id)
+    } catch (error) {
+      console.error('Error deleting note:', error)
+      throw error
+    }
+  },
+
+  // Get a single note by ID
+  async getNote(id) {
+    try {
+      return await db.notes.get(id)
+    } catch (error) {
+      console.error('Error fetching note:', error)
+      return null
+    }
+  },
+
+  // Search notes for current user
+  async searchNotes(searchTerm) {
+    try {
+      if (!searchTerm) return await this.getAllNotes()
+      
+      const term = searchTerm.toLowerCase()
+      return await db.notes
+        .where('type')
+        .equals('note')
+        .filter(note => 
+          (note.title || '').toLowerCase().includes(term) ||
+          (note.details || '').toLowerCase().includes(term) ||
+          (Array.isArray(note.tags) ? note.tags.join(' ').toLowerCase() : '').includes(term)
+        )
+        .reverse()
+        .sortBy('createdAt')
+    } catch (error) {
+      console.error('Error searching notes:', error)
+      return []
+    }
+  }
+}
+
+// Enhanced helper functions for images with sync support
+export const imageHelpers = {
+  // Get all images for current user, sorted by creation date
+  async getAllImages() {
+    try {
+      return await db.images
+        .where('type')
+        .equals('image')
+        .reverse()
+        .sortBy('createdAt')
+    } catch (error) {
+      console.error('Error fetching images:', error)
+      return []
+    }
+  },
+
+  // Add a new image with sync-compatible structure
+  async addImage(imageData) {
+    try {
+      return await db.images.add({
+        type: 'image',
+        prompt: imageData.prompt || '',
+        imageUrl: imageData.imageUrl || '',
+        _files: imageData._files || {},
+        createdAt: Date.now(),
+        owner: db.cloud.currentUserId || 'local' // Associate with current user
+      })
+    } catch (error) {
+      console.error('Error adding image:', error)
+      throw error
+    }
+  },
+
+  // Update an image
+  async updateImage(id, updates) {
+    try {
+      return await db.images.update(id, updates)
+    } catch (error) {
+      console.error('Error updating image:', error)
+      throw error
+    }
+  },
+
+  // Delete an image
+  async deleteImage(id) {
+    try {
+      return await db.images.delete(id)
+    } catch (error) {
+      console.error('Error deleting image:', error)
+      throw error
+    }
+  }
+}
+
+// Cloud sync utilities
+export const syncHelpers = {
+  // Check if user is authenticated
+  isAuthenticated() {
+    return !!db.cloud.currentUserId
+  },
+
+  // Get current user info
+  getCurrentUser() {
+    return {
+      id: db.cloud.currentUserId,
+      email: db.cloud.currentUser?.email,
+      isLoggedIn: !!db.cloud.currentUserId
+    }
+  },
+
+  // Sign in with email (triggers OTP)
+  async signIn(email) {
+    try {
+      return await db.cloud.login(email)
+    } catch (error) {
+      console.error('Error signing in:', error)
+      throw error
+    }
+  },
+
+  // Sign out
+  async signOut() {
+    try {
+      return await db.cloud.logout()
+    } catch (error) {
+      console.error('Error signing out:', error)
+      throw error
+    }
+  },
+
+  // Get sync status
+  getSyncStatus() {
+    return {
+      isOnline: db.cloud.persistedSyncState?.phase === 'online',
+      isSyncing: db.cloud.persistedSyncState?.phase === 'syncing',
+      lastSync: db.cloud.persistedSyncState?.lastSync
+    }
+  }
+}

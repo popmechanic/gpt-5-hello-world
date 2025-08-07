@@ -1,0 +1,15 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  VITE_DEXIE_CLOUD_URL = "https://zgbud0irs.dexie.cloud"
+  VITE_DEXIE_REQUIRE_AUTH = "true"
