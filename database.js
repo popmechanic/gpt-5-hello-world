@@ -7,30 +7,22 @@ Dexie.addons.push(dexieCloud)
 // Define the database with cloud sync capabilities
 export class PlayfulDataLabDB extends Dexie {
   constructor() {
-    super('PlayfulDataLabDB', {
+    super('PlayfulDataLabDB_v2', {
       addons: [dexieCloud]
     })
     
-    // Version 1: Initial schema
     this.version(1).stores({
-      notes: '@id, type, title, details, tags, priority, createdAt, _files, owner',
-      images: '@id, type, createdAt, prompt, imageUrl, _files, owner'
-    })
-    
-    // Version 2: Add public access with realmId
-    this.version(2).stores({
+      // Use '@' prefix for auto-generated global IDs that sync across devices
       notes: '@id, type, title, details, tags, priority, createdAt, _files, owner, realmId',
       images: '@id, type, createdAt, prompt, imageUrl, _files, owner, realmId'
     })
 
-    // Configure cloud sync (will be enabled when cloud database is set up)
-    this.cloud.configure({
-      // For now, we'll use a demo database URL
-      // In production, replace with your actual Dexie Cloud database URL
-      databaseUrl: import.meta.env.VITE_DEXIE_CLOUD_URL || 'https://zgbud0irs.dexie.cloud',
-      tryUseServiceWorker: true,
-      requireAuth: true // Enable authentication to trigger proper sync
-    })
+    // Temporarily disable cloud sync for debugging
+    // this.cloud.configure({
+    //   databaseUrl: import.meta.env.VITE_DEXIE_CLOUD_URL || 'https://zgbud0irs.dexie.cloud',
+    //   tryUseServiceWorker: false,
+    //   requireAuth: false
+    // })
   }
 }
 
@@ -56,7 +48,7 @@ export const noteHelpers = {
   // Add a new note with public access by default
   async addNote(noteData) {
     try {
-      return await db.notes.add({
+      const noteRecord = {
         type: 'note',
         title: noteData.title || '',
         details: noteData.details || '',
@@ -64,9 +56,15 @@ export const noteHelpers = {
         priority: noteData.priority || 'medium',
         _files: noteData._files || {},
         createdAt: Date.now(),
-        owner: db.cloud.currentUserId || 'anonymous',
-        realmId: 'rlm-public' // Make publicly readable by default
-      })
+        owner: db.cloud.currentUserId || 'anonymous'
+      }
+      
+      // Only add realmId if we're authenticated and syncing
+      if (db.cloud.currentUserId) {
+        noteRecord.realmId = 'rlm-public'
+      }
+      
+      return await db.notes.add(noteRecord)
     } catch (error) {
       console.error('Error adding note:', error)
       throw error
