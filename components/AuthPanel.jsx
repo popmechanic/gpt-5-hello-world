@@ -11,7 +11,13 @@ export function AuthPanel() {
   // Monitor authentication state changes
   const currentUser = useLiveQuery(() => {
     try {
-      return syncHelpers.getCurrentUser()
+      const user = syncHelpers.getCurrentUser()
+      // Don't treat "unauthorized" as a valid user
+      const isReallyLoggedIn = user.isLoggedIn && user.id !== 'unauthorized'
+      return {
+        ...user,
+        isLoggedIn: isReallyLoggedIn
+      }
     } catch (error) {
       return { isLoggedIn: false }
     }
@@ -22,14 +28,15 @@ export function AuthPanel() {
       // Check multiple possible sync state locations
       const cloudState = db.cloud.syncState || db.cloud.persistedSyncState || {}
       const phase = cloudState.phase || 'unknown'
-      const isLoggedIn = !!db.cloud.currentUserId
+      const userId = db.cloud.currentUserId
+      const isReallyLoggedIn = !!userId && userId !== 'unauthorized'
       
       return {
-        isOnline: phase === 'online' || (isLoggedIn && phase === 'unknown'),
+        isOnline: phase === 'online' || (isReallyLoggedIn && phase === 'unknown'),
         isSyncing: phase === 'syncing',
         lastSync: cloudState.lastSync,
         phase: phase,
-        isLoggedIn: isLoggedIn
+        isLoggedIn: isReallyLoggedIn
       }
     } catch (error) {
       console.log('Sync status error:', error)

@@ -17,12 +17,12 @@ export class PlayfulDataLabDB extends Dexie {
       images: '@id, type, createdAt, prompt, imageUrl, _files, owner, realmId'
     })
 
-    // Temporarily disable cloud sync for debugging
-    // this.cloud.configure({
-    //   databaseUrl: import.meta.env.VITE_DEXIE_CLOUD_URL || 'https://zgbud0irs.dexie.cloud',
-    //   tryUseServiceWorker: false,
-    //   requireAuth: false
-    // })
+    // Configure cloud sync
+    this.cloud.configure({
+      databaseUrl: import.meta.env.VITE_DEXIE_CLOUD_URL || 'https://zgbud0irs.dexie.cloud',
+      tryUseServiceWorker: true,
+      requireAuth: false // Allow both authenticated and anonymous access
+    })
   }
 }
 
@@ -59,8 +59,8 @@ export const noteHelpers = {
         owner: db.cloud.currentUserId || 'anonymous'
       }
       
-      // Only add realmId if we're authenticated and syncing
-      if (db.cloud.currentUserId) {
+      // Only add realmId if we're truly authenticated (not "unauthorized")
+      if (db.cloud.currentUserId && db.cloud.currentUserId !== 'unauthorized') {
         noteRecord.realmId = 'rlm-public'
       }
       
@@ -181,17 +181,20 @@ export const imageHelpers = {
 
 // Cloud sync utilities
 export const syncHelpers = {
-  // Check if user is authenticated
+  // Check if user is authenticated (exclude "unauthorized")
   isAuthenticated() {
-    return !!db.cloud.currentUserId
+    const userId = db.cloud.currentUserId
+    return !!userId && userId !== 'unauthorized'
   },
 
   // Get current user info
   getCurrentUser() {
+    const userId = db.cloud.currentUserId
+    const isReallyLoggedIn = !!userId && userId !== 'unauthorized'
     return {
-      id: db.cloud.currentUserId,
+      id: userId,
       email: db.cloud.currentUser?.email,
-      isLoggedIn: !!db.cloud.currentUserId
+      isLoggedIn: isReallyLoggedIn
     }
   },
 
