@@ -170,7 +170,7 @@ export function AuthPanel() {
           }, null, 2)}</pre>
         </details>
         <div className="text-[#242424]/70">
-          Your data automatically syncs across all your devices
+          Notes are publicly readable and sync across all devices
         </div>
       </div>
 

@@ -11,10 +11,16 @@ export class PlayfulDataLabDB extends Dexie {
       addons: [dexieCloud]
     })
     
+    // Version 1: Initial schema
     this.version(1).stores({
-      // Use '@' prefix for auto-generated global IDs that sync across devices
       notes: '@id, type, title, details, tags, priority, createdAt, _files, owner',
       images: '@id, type, createdAt, prompt, imageUrl, _files, owner'
+    })
+    
+    // Version 2: Add public access with realmId
+    this.version(2).stores({
+      notes: '@id, type, title, details, tags, priority, createdAt, _files, owner, realmId',
+      images: '@id, type, createdAt, prompt, imageUrl, _files, owner, realmId'
     })
 
     // Configure cloud sync (will be enabled when cloud database is set up)
@@ -47,7 +53,7 @@ export const noteHelpers = {
     }
   },
 
-  // Add a new note with sync-compatible structure
+  // Add a new note with public access by default
   async addNote(noteData) {
     try {
       return await db.notes.add({
@@ -58,7 +64,8 @@ export const noteHelpers = {
         priority: noteData.priority || 'medium',
         _files: noteData._files || {},
         createdAt: Date.now(),
-        owner: db.cloud.currentUserId || 'local' // Associate with current user
+        owner: db.cloud.currentUserId || 'anonymous',
+        realmId: 'rlm-public' // Make publicly readable by default
       })
     } catch (error) {
       console.error('Error adding note:', error)
@@ -135,7 +142,7 @@ export const imageHelpers = {
     }
   },
 
-  // Add a new image with sync-compatible structure
+  // Add a new image with public access by default
   async addImage(imageData) {
     try {
       return await db.images.add({
@@ -144,7 +151,8 @@ export const imageHelpers = {
         imageUrl: imageData.imageUrl || '',
         _files: imageData._files || {},
         createdAt: Date.now(),
-        owner: db.cloud.currentUserId || 'local' // Associate with current user
+        owner: db.cloud.currentUserId || 'anonymous',
+        realmId: 'rlm-public' // Make publicly readable by default
       })
     } catch (error) {
       console.error('Error adding image:', error)
