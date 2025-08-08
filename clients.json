@@ -1,0 +1,98 @@
+{
+  "schema": {
+    "notes": "@id",
+    "roles": "[realmId+name]",
+    "images": "@id",
+    "realms": "@realmId",
+    "members": "@id",
+    "$$logins": "claims.sub",
+    "$$baseRevs": "[tableName+clientRev]"
+  },
+  "sealed": false,
+  "data": {
+    "marcus.e@gmail.com": {
+      "notes": {
+        "nts0PY65bjcbQPnrMNzZdmUbelized": {
+          "tags": [
+            "test"
+          ],
+          "type": "note",
+          "owner": "marcus.e@gmail.com",
+          "title": "Test",
+          "_files": {},
+          "details": "Test ",
+          "priority": "medium",
+          "createdAt": 1754596273062
+        },
+        "nts0PY66lUSDVXNKvGa4bxq_SFOcom": {
+          "tags": [
+            "test"
+          ],
+          "type": "note",
+          "owner": "marcus.e@gmail.com",
+          "title": "test 2",
+          "_files": {},
+          "details": "Test 2",
+          "priority": "medium",
+          "createdAt": 1754596575130
+        },
+        "nts0PY6beozwVBQCwq2nNzNUeNUzed": {
+          "tags": [
+            "test"
+          ],
+          "type": "note",
+          "owner": "marcus.e@gmail.com",
+          "title": "Public test",
+          "_files": {},
+          "details": "test",
+          "priority": "medium",
+          "createdAt": 1754604936445
+        },
+        "nts0PY70hHKZ6uXcKYuEdjsQBh5com": {
+          "tags": [
+            "test"
+          ],
+          "type": "note",
+          "owner": "marcus.e@gmail.com",
+          "title": "Public data",
+          "_files": {},
+          "details": "Public",
+          "priority": "low",
+          "createdAt": 1754611762258
+        },
+        "nts0PY70sRq3Ds3YGfO2hd9Hbowcom": {
+          "tags": [
+            "test"
+          ],
+          "type": "note",
+          "owner": "marcus.e@gmail.com",
+          "title": "Public data 2",
+          "_files": {},
+          "details": "data 2",
+          "priority": "high",
+          "createdAt": 1754611807989
+        },
+        "nts0PY7C_cps1ZUobUkU0RzdL4mcom": {
+          "tags": [
+            "test"
+          ],
+          "type": "note",
+          "owner": "marcus.e@gmail.com",
+          "title": "8",
+          "_files": {},
+          "details": "8",
+          "priority": "medium",
+          "createdAt": 1754614876659
+        }
+      }
+    },
+    "rlm-public": {
+      "realms": {
+        "rlm-public": {
+          "name": "public",
+          "owner": "rlm-public"
+        }
+      }
+    }
+  }
+}

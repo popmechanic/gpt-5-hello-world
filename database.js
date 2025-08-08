@@ -159,19 +159,36 @@ export const noteHelpers = {
   async getGlobalWriteToken() {
     const databaseUrl = db.cloud.options?.databaseUrl || 'https://zgbud0irs.dexie.cloud'
     
-    // Use the client ID for the API client with GLOBAL_WRITE permissions
-    const clientId = 'kk9ib5yodajp40ei' // The client we created with GLOBAL_WRITE scope
+    // Use client credentials from Netlify environment variables
+    const clientId = import.meta.env.VITE_DEXIE_CLIENT_ID
+    const clientSecret = import.meta.env.VITE_DEXIE_CLIENT_SECRET
     
-    // We need the client secret - this is tricky as it's not exposed
-    // For now, let's try using the current user's authentication
-    const currentToken = db.cloud.currentUser?.accessToken
-    
-    if (currentToken) {
-      // Try using the current user token first
-      return currentToken
+    if (!clientId || !clientSecret) {
+      throw new Error('VITE_DEXIE_CLIENT_ID and VITE_DEXIE_CLIENT_SECRET environment variables must be set')
     }
     
-    throw new Error('Unable to obtain GLOBAL_WRITE token')
+    console.log('Requesting GLOBAL_WRITE token...')
+    const tokenResponse = await fetch(`${databaseUrl}/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        grant_type: 'client_credentials',
+        scopes: ['ACCESS_DB', 'GLOBAL_READ', 'GLOBAL_WRITE'],
+        client_id: clientId,
+        client_secret: clientSecret
+      })
+    })
+    
+    if (!tokenResponse.ok) {
+      const error = await tokenResponse.text()
+      throw new Error(`Token request failed: ${tokenResponse.status} - ${error}`)
+    }
+    
+    const tokenData = await tokenResponse.json()
+    console.log('Successfully obtained GLOBAL_WRITE token')
+    return tokenData.access_token
   },
 
   // Update a note
