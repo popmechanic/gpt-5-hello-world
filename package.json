@@ -1,7 +1,7 @@
 {
   "name": "playful-data-lab",
   "version": "1.0.0",
-  "description": "A React-based note-taking app with AI generation and file attachments",
+  "description": "A React-based note-taking app with file attachments and cloud sync",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,9 +15,7 @@
     "react-dom": "^18.2.0",
     "dexie": "^4.0.8",
     "dexie-react-hooks": "^1.1.7",
-    "dexie-cloud-addon": "^4.0.7",
-    "call-ai": "^0.10.2",
-    "use-vibes": "^0.5.7"
+    "dexie-cloud-addon": "^4.0.7"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

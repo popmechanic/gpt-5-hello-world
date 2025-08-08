@@ -1,14 +1,11 @@
-import React, { useMemo, useState, useEffect, useRef } from "react"
+import React, { useMemo, useState, useEffect } from "react"
 import { useLiveQuery } from 'dexie-react-hooks'
-import { callAI } from "call-ai"
-import { ImgGen } from "use-vibes"
-import { db, noteHelpers, imageHelpers, syncHelpers } from './database.js'
+import { db, noteHelpers, syncHelpers } from './database.js'
 import { AuthPanel } from './components/AuthPanel.jsx'
 
 export default function App() {
   // Live queries for real-time updates
   const notesRaw = useLiveQuery(() => noteHelpers.getAllNotes()) || []
-  const imageDocs = useLiveQuery(() => imageHelpers.getAllImages()) || []
 
   // New note form state
   const [newNote, setNewNote] = useState({
@@ -23,10 +20,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState("")
   const [search, setSearch] = useState("")
   const [tagInput, setTagInput] = useState("")
-  const [aiPreview, setAiPreview] = useState("")
-  const [aiBusy, setAiBusy] = useState(false)
   const [dragActive, setDragActive] = useState(false)
-  const aiBoxRef = useRef(null)
 
   // Derived data
   const notes = useMemo(() => {
@@ -115,66 +109,6 @@ export default function App() {
     }
   }
 
-  // AI Generation (structured + streaming)
-  async function generateFromPrompt(promptText) {
-    if (!promptText?.trim()) return
-    setAiBusy(true)
-    setAiPreview("")
-    let finalResponse = ""
-    try {
-      const generator = await callAI([
-        { role: "system", content: "Create concise, upbeat records. Keep titles short and tags helpful." },
-        { role: "user", content: `Create 5 items from this prompt: ${promptText}. Return JSON only with fields: title, details, tags (array), priority (low, medium, high).` }
-      ], {
-        stream: true,
-        schema: {
-          properties: {
-            items: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  title: { type: "string" },
-                  details: { type: "string" },
-                  tags: { type: "array", items: { type: "string" } },
-                  priority: { type: "string" }
-                }
-              }
-            }
-          }
-        }
-      })
-
-      for await (const chunk of generator) {
-        setAiPreview(chunk)
-        finalResponse = chunk
-        if (aiBoxRef.current) aiBoxRef.current.scrollTop = aiBoxRef.current.scrollHeight
-      }
-
-      let data
-      try {
-        data = JSON.parse(finalResponse)
-      } catch {
-        // Fallback: try to recover JSON segment
-        const start = finalResponse.indexOf("{")
-        const end = finalResponse.lastIndexOf("}")
-        data = JSON.parse(finalResponse.slice(start, end + 1))
-      }
-      const items = data.items || data.result?.items || []
-      for (const it of items) {
-        await noteHelpers.addNote({
-          title: it.title || "",
-          details: it.details || "",
-          tags: Array.isArray(it.tags) ? it.tags : [],
-          priority: it.priority || "medium"
-        })
-      }
-    } catch (err) {
-      setAiPreview(`Error: ${err?.message || String(err)}`)
-    } finally {
-      setAiBusy(false)
-    }
-  }
 
   return (
     <div className="min-h-screen text-[#242424]" style={bgPattern}>
@@ -188,7 +122,7 @@ export default function App() {
           Playful Data Lab
         </h1>
         <p className="mt-3 italic bg-[#ffffff] inline-block px-3 py-2 border-4 border-[#242424]">
-          Capture ideas, attach files, and turn prompts into structured cards. Use the generator to create batches, tap any card to edit, and try the image studio to visualize concepts. Sign in to sync your cards across devices and keep them safe in the cloud.
+          Capture ideas and attach files to structured cards. Tap any card to edit it. Sign in to sync your cards across devices and keep them safe in the cloud.
         </p>
       </header>
 
@@ -196,8 +130,8 @@ export default function App() {
         {/* Authentication and Sync Status */}
         <AuthPanel />
 
-        {/* Create note and AI generator */}
-        <section className="grid md:grid-cols-2 gap-6">
+        {/* Create note */}
+        <section>
           <div className="bg-[#ffffff] border-4 border-[#242424] p-4 rounded-sm">
             <h2 className="text-xl font-bold mb-3">New Card</h2>
             <div className="space-y-3">
@@ -321,25 +255,6 @@ export default function App() {
             </div>
           </div>
 
-          <div className="bg-[#ffffff] border-4 border-[#242424] p-4 rounded-sm">
-            <h2 className="text-xl font-bold mb-3">AI Generator</h2>
-            <GeneratorForm
-              busy={aiBusy}
-              onGenerate={generateFromPrompt}
-              onDemo={() =>
-                generateFromPrompt("Brainstorm community festival activities with logistics and volunteer roles")
-              }
-            />
-            <div className="mt-3">
-              <label className="font-semibold">Streaming preview</label>
-              <pre
-                ref={aiBoxRef}
-                className="mt-1 h-40 overflow-auto whitespace-pre-wrap bg-[#ff9770]/30 border-4 border-[#242424] p-2 rounded-sm"
-              >
-                {aiPreview || "Waiting for output..."}
-              </pre>
-            </div>
-          </div>
         </section>
 
         {/* Search and list */}
@@ -402,64 +317,11 @@ export default function App() {
           )}
         </section>
 
-        {/* Image studio */}
-        <section className="bg-[#ffffff] border-4 border-[#242424] p-4 rounded-sm">
-          <h2 className="text-xl font-bold">Image Studio</h2>
-          <p className="text-sm mb-3">Generate or edit images, then browse your history below.</p>
-          <div className="border-4 border-[#242424] p-2 bg-[#ff70a6]/20">
-            <ImgGen database={{ put: imageHelpers.addImage }} />
-          </div>
-          {imageDocs.length > 0 && (
-            <div className="mt-4">
-              <h3 className="font-semibold mb-2">Previously Created</h3>
-              <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {imageDocs.map(img => (
-                  <li key={img.id} className="border-4 border-[#242424] bg-[#ffd670]/40 p-2">
-                    <ImgGen _id={img.id} database={{ put: imageHelpers.addImage }} />
-                    <div className="mt-1 text-xs opacity-80">ID: {img.id}</div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </section>
       </main>
     </div>
   )
 }
 
-function GeneratorForm({ busy, onGenerate, onDemo }) {
-  const [prompt, setPrompt] = useState("")
-  
-  return (
-    <div>
-      <label className="font-semibold">Prompt</label>
-      <textarea
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        placeholder="Describe the set of items you want..."
-        rows={3}
-        className="mt-1 w-full border-4 border-[#242424] px-3 py-2 rounded-sm bg-[#ff70a6]/30 placeholder-[#242424]/60"
-      />
-      <div className="flex gap-3 mt-2">
-        <button
-          onClick={() => onGenerate(prompt)}
-          disabled={busy}
-          className="px-4 py-2 bg-[#ffd670] border-4 border-[#242424] font-bold disabled:opacity-60"
-        >
-          {busy ? "Generating..." : "Generate"}
-        </button>
-        <button
-          onClick={onDemo}
-          disabled={busy}
-          className="px-4 py-2 bg-[#70d6ff] border-4 border-[#242424] font-bold"
-        >
-          Demo Data
-        </button>
-      </div>
-    </div>
-  )
-}
 
 function DetailEditor({ noteId, onClose }) {
   const [doc, setDoc] = useState(null)

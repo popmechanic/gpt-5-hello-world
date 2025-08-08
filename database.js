@@ -13,8 +13,7 @@ export class PlayfulDataLabDB extends Dexie {
     
     this.version(1).stores({
       // Use '@' prefix for auto-generated global IDs that sync across devices
-      notes: '@id, type, title, details, tags, priority, createdAt, _files, owner, realmId',
-      images: '@id, type, createdAt, prompt, imageUrl, _files, owner, realmId'
+      notes: '@id, type, title, details, tags, priority, createdAt, _files, owner, realmId'
     })
 
     // Configure cloud sync with public access
@@ -252,63 +251,6 @@ export const noteHelpers = {
   }
 }
 
-// Enhanced helper functions for images with sync support
-export const imageHelpers = {
-  // Get all images for current user, sorted by creation date
-  async getAllImages() {
-    try {
-      return await db.images
-        .where('type')
-        .equals('image')
-        .reverse()
-        .sortBy('createdAt')
-    } catch (error) {
-      console.error('Error fetching images:', error)
-      return []
-    }
-  },
-
-  // Add a new image to public realm (as database owner)
-  async addImage(imageData) {
-    try {
-      const imageRecord = {
-        type: 'image',
-        prompt: imageData.prompt || '',
-        imageUrl: imageData.imageUrl || '',
-        _files: imageData._files || {},
-        createdAt: Date.now(),
-        owner: db.cloud.currentUserId || 'anonymous'
-      }
-      
-      // Store in personal realm - public realm sync seems to be rejected by cloud
-      
-      return await db.images.add(imageRecord)
-    } catch (error) {
-      console.error('Error adding image:', error)
-      throw error
-    }
-  },
-
-  // Update an image
-  async updateImage(id, updates) {
-    try {
-      return await db.images.update(id, updates)
-    } catch (error) {
-      console.error('Error updating image:', error)
-      throw error
-    }
-  },
-
-  // Delete an image
-  async deleteImage(id) {
-    try {
-      return await db.images.delete(id)
-    } catch (error) {
-      console.error('Error deleting image:', error)
-      throw error
-    }
-  }
-}
 
 // Cloud sync utilities
 export const syncHelpers = {
