@@ -7,7 +7,7 @@ Dexie.addons.push(dexieCloud)
 // Define the database with cloud sync capabilities
 export class PlayfulDataLabDB extends Dexie {
   constructor() {
-    super('PlayfulDataLabDB_v2', {
+    super('PlayfulDataLabDB_v3', {
       addons: [dexieCloud]
     })
     
@@ -45,7 +45,7 @@ export const noteHelpers = {
     }
   },
 
-  // Add a new note with public access by default
+  // Add a new note to public realm (as database owner)
   async addNote(noteData) {
     try {
       const noteRecord = {
@@ -56,12 +56,8 @@ export const noteHelpers = {
         priority: noteData.priority || 'medium',
         _files: noteData._files || {},
         createdAt: Date.now(),
-        owner: db.cloud.currentUserId || 'anonymous'
-      }
-      
-      // Only add realmId if we're truly authenticated (not "unauthorized")
-      if (db.cloud.currentUserId && db.cloud.currentUserId !== 'unauthorized') {
-        noteRecord.realmId = 'rlm-public'
+        owner: db.cloud.currentUserId || 'anonymous',
+        realmId: 'rlm-public' // Make publicly readable since you're the database owner
       }
       
       return await db.notes.add(noteRecord)
@@ -140,7 +136,7 @@ export const imageHelpers = {
     }
   },
 
-  // Add a new image with public access by default
+  // Add a new image to public realm (as database owner)
   async addImage(imageData) {
     try {
       return await db.images.add({
@@ -150,7 +146,7 @@ export const imageHelpers = {
         _files: imageData._files || {},
         createdAt: Date.now(),
         owner: db.cloud.currentUserId || 'anonymous',
-        realmId: 'rlm-public' // Make publicly readable by default
+        realmId: 'rlm-public' // Make publicly readable since you're the database owner
       })
     } catch (error) {
       console.error('Error adding image:', error)
