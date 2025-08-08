@@ -188,7 +188,7 @@ export default function App() {
           Playful Data Lab
         </h1>
         <p className="mt-3 italic bg-[#ffffff] inline-block px-3 py-2 border-4 border-[#242424]">
-          Capture ideas, attach files, and turn prompts into structured cards. Use the generator to create batches, tap any card to edit, and try the image studio to visualize concepts. All cards are publicly readable and sync across devices. Everything saves instantly and shares with the community.
+          Capture ideas, attach files, and turn prompts into structured cards. Use the generator to create batches, tap any card to edit, and try the image studio to visualize concepts. Sign in to sync your cards across devices and keep them safe in the cloud.
         </p>
       </header>
 

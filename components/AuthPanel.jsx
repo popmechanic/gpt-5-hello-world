@@ -172,7 +172,10 @@ export function AuthPanel() {
           }, null, 2)}</pre>
         </details>
         <div className="text-[#242424]/70">
-          Notes are publicly readable and sync across all devices
+          {currentUser?.isLoggedIn 
+            ? "Notes sync to your personal cloud storage across devices"
+            : "Sign in to save and sync notes across devices"
+          }
         </div>
       </div>
 

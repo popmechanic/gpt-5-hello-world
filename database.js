@@ -107,13 +107,8 @@ export const noteHelpers = {
         owner: currentUserId || 'anonymous'
       }
       
-      // Only add to public realm if authenticated as database owner
-      if (currentUserId === 'marcus.e@gmail.com') {
-        noteRecord.realmId = 'rlm-public'
-        console.log('Adding to public realm as database owner')
-      } else {
-        console.log('Adding to personal realm, userId:', currentUserId)
-      }
+      // Store in personal realm - public realm sync seems to be rejected by cloud
+      console.log('Adding to personal realm, userId:', currentUserId)
       
       console.log('Note record to save:', noteRecord)
       const result = await db.notes.add(noteRecord)
@@ -206,10 +201,7 @@ export const imageHelpers = {
         owner: db.cloud.currentUserId || 'anonymous'
       }
       
-      // Only add to public realm if authenticated as database owner
-      if (db.cloud.currentUserId === 'marcus.e@gmail.com') {
-        imageRecord.realmId = 'rlm-public'
-      }
+      // Store in personal realm - public realm sync seems to be rejected by cloud
       
       return await db.images.add(imageRecord)
     } catch (error) {
