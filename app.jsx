@@ -363,11 +363,9 @@ export default function App() {
               >
                 <div className="p-3">
                   <div className="flex items-center gap-3">
-                    <img
-                      src={`https://picsum.photos/seed/${encodeURIComponent(n.id)}/96`}
-                      alt=""
-                      className="w-16 h-16 object-cover border-4 border-[#242424]"
-                    />
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#70d6ff] to-[#ff70a6] border-4 border-[#242424] rounded-sm flex items-center justify-center text-white font-bold text-xl">
+                      {(n.title || "?")[0].toUpperCase()}
+                    </div>
                     <div>
                       <div className="font-bold">{n.title || "(untitled)"}</div>
                       <div className="text-sm opacity-80">priority: {n.priority || "medium"}</div>
