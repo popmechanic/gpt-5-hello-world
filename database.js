@@ -17,11 +17,15 @@ export class PlayfulDataLabDB extends Dexie {
       images: '@id, type, createdAt, prompt, imageUrl, _files, owner, realmId'
     })
 
-    // Configure cloud sync
+    // Configure cloud sync with public access
     this.cloud.configure({
       databaseUrl: import.meta.env.VITE_DEXIE_CLOUD_URL || 'https://zgbud0irs.dexie.cloud',
       tryUseServiceWorker: true,
-      requireAuth: false // Allow both authenticated and anonymous access
+      requireAuth: false, // Allow both authenticated and anonymous access
+      disableWebSocket: false, // Ensure real-time sync works
+      periodicSync: {
+        minInterval: 10000 // Sync every 10 seconds for better visibility
+      }
     })
   }
 }
@@ -31,9 +35,18 @@ export const db = new PlayfulDataLabDB()
 
 // Enhanced helper functions for notes with sync support
 export const noteHelpers = {
-  // Get all notes for current user, sorted by creation date
+  // Get all notes (including public realm), sorted by creation date
   async getAllNotes() {
     try {
+      // Force sync for anonymous users to see public data
+      if (!syncHelpers.isAuthenticated()) {
+        try {
+          await db.cloud.sync()
+        } catch (e) {
+          console.log('Sync attempt for anonymous user:', e.message)
+        }
+      }
+      
       return await db.notes
         .where('type')
         .equals('note')
