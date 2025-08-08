@@ -175,9 +175,9 @@ export const noteHelpers = {
       },
       body: JSON.stringify({
         grant_type: 'client_credentials',
-        scopes: ['ACCESS_DB', 'GLOBAL_READ', 'GLOBAL_WRITE'],
         client_id: clientId,
-        client_secret: clientSecret
+        client_secret: clientSecret,
+        scopes: ['IMPERSONATE', 'MANAGE_DB', 'DELETE_DB', 'ACCESS_DB', 'GLOBAL_READ', 'GLOBAL_WRITE']
       })
     })
     
