@@ -33,22 +33,34 @@ export class PlayfulDataLabDB extends Dexie {
 // Create database instance
 export const db = new PlayfulDataLabDB()
 
-// Add sync event listeners for debugging
-db.cloud.events.syncComplete.subscribe(() => {
-  console.log('Sync completed')
-})
+// Add sync event listeners for debugging (with safety checks)
+try {
+  if (db.cloud.events?.syncComplete) {
+    db.cloud.events.syncComplete.subscribe(() => {
+      console.log('Sync completed')
+    })
+  }
 
-db.cloud.events.syncError.subscribe((error) => {
-  console.error('Sync error:', error)
-})
+  if (db.cloud.events?.syncError) {
+    db.cloud.events.syncError.subscribe((error) => {
+      console.error('Sync error:', error)
+    })
+  }
 
-db.cloud.events.ready.subscribe(() => {
-  console.log('Dexie Cloud ready')
-})
+  if (db.cloud.events?.ready) {
+    db.cloud.events.ready.subscribe(() => {
+      console.log('Dexie Cloud ready')
+    })
+  }
 
-db.cloud.events.unauthorized.subscribe(() => {
-  console.log('Dexie Cloud unauthorized event')
-})
+  if (db.cloud.events?.unauthorized) {
+    db.cloud.events.unauthorized.subscribe(() => {
+      console.log('Dexie Cloud unauthorized event')
+    })
+  }
+} catch (error) {
+  console.log('Could not set up sync event listeners:', error)
+}
 
 // Enhanced helper functions for notes with sync support
 export const noteHelpers = {
