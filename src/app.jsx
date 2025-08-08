@@ -454,100 +454,126 @@ function DetailEditor({ noteId, onClose }) {
   }
 
   if (loading) {
-    return <div className="p-4 bg-[#70d6ff]/30 border-4 border-[#242424]">Loading…</div>
+    return (
+      <div className="bg-accent/30 border-4 border-border rounded-base p-6 text-center">
+        <p className="font-black text-lg">⏳ LOADING...</p>
+      </div>
+    )
   }
 
   if (!doc) {
-    return <div className="p-4 bg-[#ff70a6]/30 border-4 border-[#242424]">Note not found</div>
+    return (
+      <div className="bg-destructive/30 border-4 border-border rounded-base p-6 text-center">
+        <p className="font-black text-lg">❌ CARD NOT FOUND</p>
+      </div>
+    )
   }
 
   return (
-    <div className="grid lg:grid-cols-2 gap-4">
-      <div>
-        <label className="block">
-          <span className="font-semibold">Title</span>
-          <input
+    <div className="grid lg:grid-cols-2 gap-6">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-black uppercase tracking-wide">Title</label>
+          <Input
             value={doc.title || ""}
             onChange={(e) => updateDoc({ title: e.target.value })}
-            className="mt-1 w-full border-4 border-[#242424] px-3 py-2 rounded-sm bg-[#e9ff70] placeholder-[#242424]/60"
+            placeholder="Enter title..."
+            className="text-lg font-bold"
           />
-        </label>
-        <label className="block mt-3">
-          <span className="font-semibold">Details</span>
-          <textarea
+        </div>
+        
+        <div className="space-y-2">
+          <label className="text-sm font-black uppercase tracking-wide">Details</label>
+          <Textarea
             value={doc.details || ""}
             onChange={(e) => updateDoc({ details: e.target.value })}
+            placeholder="Add details..."
             rows={6}
-            className="mt-1 w-full border-4 border-[#242424] px-3 py-2 rounded-sm bg-[#70d6ff]/40"
+            className="text-base"
           />
-        </label>
+        </div>
 
-        <div className="mt-3">
-          <span className="font-semibold">Tags</span>
+        <div className="space-y-2">
+          <label className="text-sm font-black uppercase tracking-wide">Tags</label>
           <TagEditor tags={doc.tags || []} onChange={(tags) => updateDoc({ tags })} />
         </div>
 
-        <div className="mt-3">
-          <span className="font-semibold">Priority</span>
+        <div className="space-y-2">
+          <label className="text-sm font-black uppercase tracking-wide">Priority</label>
           <select
             value={doc.priority || "medium"}
             onChange={(e) => updateDoc({ priority: e.target.value })}
-            className="mt-1 w-full border-4 border-[#242424] px-3 py-2 rounded-sm bg-[#ff9770]/40"
+            className="w-full rounded-base border-4 border-border bg-card px-4 py-3 text-base font-bold shadow-shadow focus:ring-4 focus:ring-ring"
           >
-            <option>low</option>
-            <option>medium</option>
-            <option>high</option>
+            <option value="low">🟢 LOW</option>
+            <option value="medium">🟡 MEDIUM</option>
+            <option value="high">🔴 HIGH</option>
           </select>
         </div>
 
-        <div className="flex gap-3 mt-4">
-          <button
+        <div className="flex gap-3 pt-4">
+          <Button
             onClick={deleteNote}
-            className="px-4 py-2 bg-[#ff70a6] border-4 border-[#242424] font-bold"
+            variant="destructive"
+            size="lg"
+            className="flex-1 font-black transform hover:scale-105 transition-transform"
           >
-            Delete
-          </button>
-          <button
+            🗑️ DELETE CARD
+          </Button>
+          <Button
             onClick={onClose}
-            className="px-4 py-2 bg-[#70d6ff] border-4 border-[#242424] font-bold"
+            variant="outline"
+            size="lg"
+            className="flex-1 font-black transform hover:scale-105 transition-transform"
           >
-            Close
-          </button>
+            ✅ CLOSE
+          </Button>
         </div>
       </div>
 
-      <div>
-        <div
-          className={`p-3 border-4 border-dashed ${dropActive ? "bg-[#ff70a6]/40" : "bg-[#ffffff]"} border-[#242424] rounded-sm`}
-          onDragEnter={() => setDropActive(true)}
-          onDragOver={preventDefaults}
-          onDragLeave={() => setDropActive(false)}
-          onDrop={handleDrop}
-        >
-          Drag & drop files to attach to this card
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-black uppercase tracking-wide">File Attachments</label>
+          <div
+            className={`rounded-base border-4 border-dashed border-border p-6 text-center transition-colors ${
+              dropActive ? "bg-accent/50" : "bg-muted/30"
+            }`}
+            onDragEnter={() => setDropActive(true)}
+            onDragOver={preventDefaults}
+            onDragLeave={() => setDropActive(false)}
+            onDrop={handleDrop}
+          >
+            <p className="font-bold text-lg">📎 DRAG FILES HERE</p>
+            <p className="text-sm font-semibold opacity-70">Add attachments to this card!</p>
+          </div>
         </div>
-        <div className="mt-2 text-sm">
+        
+        <div className="space-y-3">
           {(doc._files && Object.keys(doc._files).length > 0) ? (
-            <ul className="space-y-2">
-              {Object.keys(doc._files).map(name => (
-                <li key={name} className="flex items-center justify-between px-2 py-1 bg-[#ffd670]/40 border-4 border-[#242424]">
-                  <span>{name}</span>
-                  <button
-                    className="px-2 py-1 bg-[#70d6ff] border-4 border-[#242424] text-sm"
-                    onClick={async () => {
-                      const next = { ...(doc._files || {}) }
-                      delete next[name]
-                      updateDoc({ _files: next })
-                    }}
-                  >
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
+            Object.keys(doc._files).map(name => (
+              <div key={name} className="flex items-center justify-between bg-card border-4 border-border rounded-base p-3 shadow-shadow">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-sm">📎</span>
+                  <span className="font-semibold">{name}</span>
+                </div>
+                <Button
+                  onClick={async () => {
+                    const next = { ...(doc._files || {}) }
+                    delete next[name]
+                    updateDoc({ _files: next })
+                  }}
+                  variant="destructive"
+                  size="sm"
+                  className="font-black"
+                >
+                  🗑️ REMOVE
+                </Button>
+              </div>
+            ))
           ) : (
-            <div className="px-2 py-2 bg-[#70d6ff]/30 border-4 border-[#242424]">
-              No attachments yet.
+            <div className="bg-muted/50 border-4 border-border rounded-base p-4 text-center">
+              <p className="font-bold opacity-70">📁 NO ATTACHMENTS YET</p>
+              <p className="text-sm font-semibold opacity-50">Drag files above to add them!</p>
             </div>
           )}
         </div>
@@ -568,33 +594,36 @@ function TagEditor({ tags, onChange }) {
   }
   
   return (
-    <div>
+    <div className="space-y-3">
       <div className="flex gap-2">
-        <input
+        <Input
           value={val}
           onChange={(e) => setVal(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && add()}
-          placeholder="Add tag"
-          className="flex-1 border-4 border-[#242424] px-3 py-2 rounded-sm bg-[#ff9770]/30"
+          placeholder="Add tag..."
+          className="flex-1"
         />
-        <button
+        <Button
           onClick={add}
-          className="px-3 py-2 bg-[#ffd670] border-4 border-[#242424] font-semibold"
+          variant="outline"
+          className="font-black"
         >
-          Add
-        </button>
+          ADD
+        </Button>
       </div>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         {(tags || []).map(t => (
-          <span key={t} className="text-sm px-2 py-1 bg-[#e9ff70] border-4 border-[#242424]">
-            #{t}{" "}
-            <button
-              className="underline"
+          <Badge key={t} variant="outline" className="font-bold">
+            #{t}
+            <Button
               onClick={() => onChange(tags.filter(x => x !== t))}
+              variant="ghost"
+              size="sm"
+              className="ml-2 h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
             >
-              remove
-            </button>
-          </span>
+              ×
+            </Button>
+          </Badge>
         ))}
       </div>
     </div>
