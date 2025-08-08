@@ -166,7 +166,9 @@ export function AuthPanel() {
             phase: syncStatus?.phase,
             isLoggedIn: syncStatus?.isLoggedIn,
             userId: db.cloud.currentUserId,
-            syncState: db.cloud.syncState?.phase
+            syncState: db.cloud.syncState?.phase,
+            dbUrl: db.cloud.options?.databaseUrl,
+            requireAuth: db.cloud.options?.requireAuth
           }, null, 2)}</pre>
         </details>
         <div className="text-[#242424]/70">
