@@ -168,6 +168,9 @@ export const noteHelpers = {
     }
     
     console.log('Requesting GLOBAL_WRITE token...')
+    console.log('Using client ID:', clientId)
+    console.log('Database URL:', databaseUrl)
+    
     const tokenResponse = await fetch(`${databaseUrl}/token`, {
       method: 'POST',
       headers: {
@@ -181,14 +184,19 @@ export const noteHelpers = {
       })
     })
     
+    console.log('Token response status:', tokenResponse.status)
+    
     if (!tokenResponse.ok) {
       const error = await tokenResponse.text()
+      console.error('Token request failed:', error)
       throw new Error(`Token request failed: ${tokenResponse.status} - ${error}`)
     }
     
     const tokenData = await tokenResponse.json()
-    console.log('Successfully obtained GLOBAL_WRITE token')
-    return tokenData.access_token
+    console.log('Successfully obtained GLOBAL_WRITE token:', tokenData)
+    console.log('Token to use:', tokenData.accessToken || tokenData.access_token)
+    
+    return tokenData.accessToken || tokenData.access_token
   },
 
   // Update a note
