@@ -33,6 +33,23 @@ export class PlayfulDataLabDB extends Dexie {
 // Create database instance
 export const db = new PlayfulDataLabDB()
 
+// Add sync event listeners for debugging
+db.cloud.events.syncComplete.subscribe(() => {
+  console.log('Sync completed')
+})
+
+db.cloud.events.syncError.subscribe((error) => {
+  console.error('Sync error:', error)
+})
+
+db.cloud.events.ready.subscribe(() => {
+  console.log('Dexie Cloud ready')
+})
+
+db.cloud.events.unauthorized.subscribe(() => {
+  console.log('Dexie Cloud unauthorized event')
+})
+
 // Enhanced helper functions for notes with sync support
 export const noteHelpers = {
   // Get all notes (including public realm), sorted by creation date
