@@ -47,11 +47,14 @@ export const noteHelpers = {
         }
       }
       
-      return await db.notes
+      const notes = await db.notes
         .where('type')
         .equals('note')
         .reverse()
         .sortBy('createdAt')
+      
+      console.log('Retrieved notes:', notes.length, notes.map(n => ({ id: n.id, title: n.title, realmId: n.realmId, owner: n.owner })))
+      return notes
     } catch (error) {
       console.error('Error fetching notes:', error)
       return []
@@ -61,6 +64,9 @@ export const noteHelpers = {
   // Add a new note to public realm (as database owner)
   async addNote(noteData) {
     try {
+      const currentUserId = db.cloud.currentUserId
+      console.log('Adding note with currentUserId:', currentUserId)
+      
       const noteRecord = {
         type: 'note',
         title: noteData.title || '',
@@ -69,15 +75,21 @@ export const noteHelpers = {
         priority: noteData.priority || 'medium',
         _files: noteData._files || {},
         createdAt: Date.now(),
-        owner: db.cloud.currentUserId || 'anonymous'
+        owner: currentUserId || 'anonymous'
       }
       
       // Only add to public realm if authenticated as database owner
-      if (db.cloud.currentUserId === 'marcus.e@gmail.com') {
+      if (currentUserId === 'marcus.e@gmail.com') {
         noteRecord.realmId = 'rlm-public'
+        console.log('Adding to public realm as database owner')
+      } else {
+        console.log('Adding to personal realm, userId:', currentUserId)
       }
       
-      return await db.notes.add(noteRecord)
+      console.log('Note record to save:', noteRecord)
+      const result = await db.notes.add(noteRecord)
+      console.log('Note saved successfully with ID:', result)
+      return result
     } catch (error) {
       console.error('Error adding note:', error)
       throw error
