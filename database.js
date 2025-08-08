@@ -56,8 +56,12 @@ export const noteHelpers = {
         priority: noteData.priority || 'medium',
         _files: noteData._files || {},
         createdAt: Date.now(),
-        owner: db.cloud.currentUserId || 'anonymous',
-        realmId: 'rlm-public' // Make publicly readable since you're the database owner
+        owner: db.cloud.currentUserId || 'anonymous'
+      }
+      
+      // Only add to public realm if authenticated as database owner
+      if (db.cloud.currentUserId === 'marcus.e@gmail.com') {
+        noteRecord.realmId = 'rlm-public'
       }
       
       return await db.notes.add(noteRecord)
@@ -139,15 +143,21 @@ export const imageHelpers = {
   // Add a new image to public realm (as database owner)
   async addImage(imageData) {
     try {
-      return await db.images.add({
+      const imageRecord = {
         type: 'image',
         prompt: imageData.prompt || '',
         imageUrl: imageData.imageUrl || '',
         _files: imageData._files || {},
         createdAt: Date.now(),
-        owner: db.cloud.currentUserId || 'anonymous',
-        realmId: 'rlm-public' // Make publicly readable since you're the database owner
-      })
+        owner: db.cloud.currentUserId || 'anonymous'
+      }
+      
+      // Only add to public realm if authenticated as database owner
+      if (db.cloud.currentUserId === 'marcus.e@gmail.com') {
+        imageRecord.realmId = 'rlm-public'
+      }
+      
+      return await db.images.add(imageRecord)
     } catch (error) {
       console.error('Error adding image:', error)
       throw error
