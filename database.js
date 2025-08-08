@@ -90,7 +90,7 @@ export const noteHelpers = {
     }
   },
 
-  // Add a new note to public realm (as database owner)
+  // Add a new note to public realm using REST API
   async addNote(noteData) {
     try {
       const currentUserId = db.cloud.currentUserId
@@ -107,9 +107,18 @@ export const noteHelpers = {
         owner: currentUserId || 'anonymous'
       }
       
-      // Store in personal realm - public realm sync seems to be rejected by cloud
-      console.log('Adding to personal realm, userId:', currentUserId)
+      // Try to add to public realm via REST API if authenticated as owner
+      if (currentUserId === 'marcus.e@gmail.com') {
+        console.log('Attempting to add to public realm via REST API')
+        try {
+          return await this.addToPublicRealm('notes', noteRecord)
+        } catch (restError) {
+          console.warn('REST API failed, falling back to personal realm:', restError.message)
+        }
+      }
       
+      // Fallback to personal realm
+      console.log('Adding to personal realm, userId:', currentUserId)
       console.log('Note record to save:', noteRecord)
       const result = await db.notes.add(noteRecord)
       console.log('Note saved successfully with ID:', result)
@@ -118,6 +127,51 @@ export const noteHelpers = {
       console.error('Error adding note:', error)
       throw error
     }
+  },
+
+  // Add data to public realm via REST API
+  async addToPublicRealm(table, data) {
+    const databaseUrl = db.cloud.options?.databaseUrl || 'https://zgbud0irs.dexie.cloud'
+    
+    // Get token for the client with GLOBAL_WRITE permissions
+    const token = await this.getGlobalWriteToken()
+    
+    const response = await fetch(`${databaseUrl}/public/${table}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify([data])
+    })
+    
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(`REST API error: ${response.status} - ${error}`)
+    }
+    
+    const result = await response.json()
+    console.log('Successfully added to public realm via REST API:', result)
+    return result[0]?.id || result.id
+  },
+
+  // Get token with GLOBAL_WRITE permissions
+  async getGlobalWriteToken() {
+    const databaseUrl = db.cloud.options?.databaseUrl || 'https://zgbud0irs.dexie.cloud'
+    
+    // Use the client ID for the API client with GLOBAL_WRITE permissions
+    const clientId = 'kk9ib5yodajp40ei' // The client we created with GLOBAL_WRITE scope
+    
+    // We need the client secret - this is tricky as it's not exposed
+    // For now, let's try using the current user's authentication
+    const currentToken = db.cloud.currentUser?.accessToken
+    
+    if (currentToken) {
+      // Try using the current user token first
+      return currentToken
+    }
+    
+    throw new Error('Unable to obtain GLOBAL_WRITE token')
   },
 
   // Update a note
