@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { db, syncHelpers } from '../database.js'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 
 export function AuthPanel() {
   const [email, setEmail] = useState('')
@@ -82,129 +86,175 @@ export function AuthPanel() {
 
   if (!currentUser?.isLoggedIn) {
     return (
-      <div className="bg-[#ffffff] border-4 border-[#242424] p-4 rounded-sm">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xl font-bold">Cloud Sync</h2>
-          <button
-            onClick={() => setShowAuthForm(!showAuthForm)}
-            className="px-3 py-1 bg-[#70d6ff] border-4 border-[#242424] font-semibold text-sm"
-          >
-            {showAuthForm ? 'Hide' : 'Sign In'}
-          </button>
-        </div>
-
-        <div className="text-sm text-[#242424]/70 mb-2">
-          ⚠️ <strong>Offline Mode:</strong> Data is stored locally only
-        </div>
-
-        {showAuthForm && (
-          <form onSubmit={handleSignIn} className="space-y-3">
-            <div>
-              <label className="block font-semibold text-sm">Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="mt-1 w-full border-4 border-[#242424] px-3 py-2 rounded-sm bg-[#e9ff70] placeholder-[#242424]/60"
-                required
-                disabled={isLoading}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={isLoading || !email.trim()}
-              className="px-4 py-2 bg-[#ffd670] border-4 border-[#242424] font-bold disabled:opacity-60"
+      <Card className="transform -rotate-2 hover:rotate-0 transition-transform duration-200">
+        <CardHeader className="bg-muted text-muted-foreground">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl font-black flex items-center gap-2">
+              ☁️ CLOUD SYNC
+            </CardTitle>
+            <Button
+              onClick={() => setShowAuthForm(!showAuthForm)}
+              variant={showAuthForm ? "destructive" : "secondary"}
+              className="font-black"
             >
-              {isLoading ? 'Sending...' : 'Send Login Link'}
-            </button>
-          </form>
-        )}
-
-        {message && (
-          <div className="mt-3 p-2 bg-[#ff70a6]/20 border-4 border-[#242424] rounded-sm text-sm">
-            {message}
+              {showAuthForm ? '❌ HIDE' : '🔑 SIGN IN'}
+            </Button>
           </div>
-        )}
-      </div>
+        </CardHeader>
+        <CardContent className="p-6 space-y-4">
+          <div className="bg-destructive/20 border-4 border-destructive rounded-base p-4">
+            <p className="font-black text-lg">⚠️ OFFLINE MODE</p>
+            <p className="font-bold opacity-80">Your data is stored locally only!</p>
+          </div>
+
+          {showAuthForm && (
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-black uppercase tracking-wide">Email Address</label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  disabled={isLoading}
+                  className="text-lg font-bold"
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={isLoading || !email.trim()}
+                size="lg"
+                className="w-full text-lg font-black transform hover:scale-105 transition-transform"
+              >
+                {isLoading ? '📧 SENDING...' : '🚀 SEND LOGIN LINK'}
+              </Button>
+            </form>
+          )}
+
+          {message && (
+            <div className="bg-accent/20 border-4 border-accent rounded-base p-4">
+              <p className="font-bold">{message}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     )
   }
 
   return (
-    <div className="bg-[#ffffff] border-4 border-[#242424] p-4 rounded-sm">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xl font-bold">Cloud Sync</h2>
-        <div className="flex items-center gap-2">
-          <SyncStatusIndicator status={syncStatus} />
-          <button
-            onClick={handleForceSync}
-            disabled={isLoading}
-            className="px-2 py-1 bg-[#ffd670] border-4 border-[#242424] font-semibold text-xs disabled:opacity-60"
-          >
-            Sync
-          </button>
-          <button
-            onClick={handleSignOut}
-            disabled={isLoading}
-            className="px-3 py-1 bg-[#ff70a6] border-4 border-[#242424] font-semibold text-sm disabled:opacity-60"
-          >
-            Sign Out
-          </button>
+    <Card className="transform rotate-2 hover:rotate-0 transition-transform duration-200">
+      <CardHeader className="bg-secondary text-secondary-foreground">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-2xl font-black flex items-center gap-2">
+            ✅ CONNECTED TO CLOUD
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <SyncStatusIndicator status={syncStatus} />
+            <Button
+              onClick={handleForceSync}
+              disabled={isLoading}
+              variant="outline"
+              size="sm"
+              className="font-black"
+            >
+              🔄 SYNC
+            </Button>
+            <Button
+              onClick={handleSignOut}
+              disabled={isLoading}
+              variant="destructive"
+              size="sm"
+              className="font-black"
+            >
+              🚪 SIGN OUT
+            </Button>
+          </div>
         </div>
-      </div>
+      </CardHeader>
+      <CardContent className="p-6 space-y-4">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div className="bg-primary/10 rounded-base border-4 border-primary p-4">
+            <p className="font-black text-lg">👤 USER</p>
+            <p className="font-bold opacity-80 break-all">{currentUser?.email || 'Anonymous'}</p>
+          </div>
+          
+          <div className={`rounded-base border-4 p-4 ${
+            syncStatus?.isOnline 
+              ? 'bg-secondary/30 border-secondary' 
+              : 'bg-destructive/20 border-destructive'
+          }`}>
+            <p className="font-black text-lg">🌐 STATUS</p>
+            <p className="font-bold opacity-80">{getSyncStatusText(syncStatus)}</p>
+          </div>
+        </div>
 
-      <div className="text-sm space-y-1">
-        <div>
-          ✅ <strong>Signed in as:</strong> {currentUser?.email || 'Anonymous'}
+        <div className="bg-accent/10 border-4 border-accent rounded-base p-4">
+          <p className="font-black text-lg mb-2">🚀 YOUR DATA IS SYNCING!</p>
+          <p className="font-bold opacity-80">
+            Your cards are stored in the public realm and sync across all devices automatically.
+          </p>
         </div>
-        <div>
-          🔄 <strong>Sync status:</strong> {getSyncStatusText(syncStatus)}
-        </div>
-        <details className="text-xs text-[#242424]/50 mt-1">
-          <summary>Debug Info</summary>
-          <pre>{JSON.stringify({ 
-            phase: syncStatus?.phase,
-            isLoggedIn: syncStatus?.isLoggedIn,
-            userId: db.cloud.currentUserId,
-            syncState: db.cloud.syncState?.phase,
-            dbUrl: db.cloud.options?.databaseUrl,
-            requireAuth: db.cloud.options?.requireAuth
-          }, null, 2)}</pre>
+
+        <details className="bg-muted rounded-base border-2 border-border p-3">
+          <summary className="font-black cursor-pointer hover:opacity-70">🔧 DEBUG INFO</summary>
+          <pre className="mt-2 text-xs font-mono bg-card p-2 rounded border overflow-auto">
+{JSON.stringify({ 
+  phase: syncStatus?.phase,
+  isLoggedIn: syncStatus?.isLoggedIn,
+  userId: db.cloud.currentUserId,
+  syncState: db.cloud.syncState?.phase,
+  dbUrl: db.cloud.options?.databaseUrl,
+  requireAuth: db.cloud.options?.requireAuth
+}, null, 2)}
+          </pre>
         </details>
-        <div className="text-[#242424]/70">
-          {currentUser?.isLoggedIn 
-            ? "Notes sync to your personal cloud storage across devices"
-            : "Sign in to save and sync notes across devices"
-          }
-        </div>
-      </div>
 
-      {message && (
-        <div className="mt-3 p-2 bg-[#70d6ff]/20 border-4 border-[#242424] rounded-sm text-sm">
-          {message}
-        </div>
-      )}
-    </div>
+        {message && (
+          <div className="bg-accent/20 border-4 border-accent rounded-base p-4">
+            <p className="font-bold">{message}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 
 function SyncStatusIndicator({ status }) {
-  if (!status) return <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+  if (!status) {
+    return (
+      <Badge variant="secondary" className="font-black">
+        ❓ UNKNOWN
+      </Badge>
+    )
+  }
 
   if (status.isSyncing) {
-    return <div className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse"></div>
+    return (
+      <Badge variant="outline" className="font-black animate-pulse border-yellow-500 text-yellow-600">
+        🔄 SYNCING
+      </Badge>
+    )
   }
   
   if (status.isOnline) {
-    return <div className="w-3 h-3 rounded-full bg-green-400"></div>
+    return (
+      <Badge variant="secondary" className="font-black bg-green-100 text-green-800 border-green-500">
+        🟢 ONLINE
+      </Badge>
+    )
   }
   
-  return <div className="w-3 h-3 rounded-full bg-red-400"></div>
+  return (
+    <Badge variant="destructive" className="font-black">
+      🔴 OFFLINE
+    </Badge>
+  )
 }
 
 function getSyncStatusText(status) {
-  if (!status) return 'Unknown'
-  if (status.isSyncing) return 'Syncing...'
-  if (status.isOnline) return 'Online'
-  return `Offline (${status.phase || 'no-phase'})`
+  if (!status) return '❓ UNKNOWN'
+  if (status.isSyncing) return '🔄 SYNCING DATA...'
+  if (status.isOnline) return '🟢 ONLINE & READY'
+  return `🔴 OFFLINE (${status.phase || 'no-phase'})`
 }

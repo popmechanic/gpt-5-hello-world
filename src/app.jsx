@@ -2,6 +2,11 @@ import React, { useMemo, useState, useEffect } from "react"
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, noteHelpers, syncHelpers } from './database.js'
 import { AuthPanel } from './components/AuthPanel.jsx'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
 
 export default function App() {
   // Live queries for real-time updates
@@ -47,12 +52,7 @@ export default function App() {
     ).slice(0, 6)
   }, [allTags, tagInput, newNote.tags])
 
-  // Background pattern
-  const bgPattern = {
-    backgroundImage: `radial-gradient(#e9ff70 1.2px, transparent 1.2px), radial-gradient(#ff70a6 1.2px, transparent 1.2px), linear-gradient(135deg, rgba(112,214,255,0.25) 20%, transparent 20%), linear-gradient(225deg, rgba(255,151,112,0.25) 20%, transparent 20%)`,
-    backgroundPosition: "0 0, 12px 12px, 0 0, 0 0",
-    backgroundSize: "24px 24px, 24px 24px, 24px 24px, 24px 24px"
-  }
+  // Neobrutalism background - no pattern needed, the colors will pop
 
   // Update new note fields
   const updateNewNote = (updates) => {
@@ -111,211 +111,293 @@ export default function App() {
 
 
   return (
-    <div className="min-h-screen text-[#242424]" style={bgPattern}>
-      {/* Decorative shapes */}
-      <div className="pointer-events-none fixed -top-10 -left-10 w-40 h-40 rounded-full bg-[#70d6ff] opacity-60 border-4 border-[#242424]" />
-      <div className="pointer-events-none fixed top-10 -right-10 w-32 h-32 rotate-12 bg-[#ff9770] opacity-60 border-4 border-[#242424]" />
-      <div className="pointer-events-none fixed bottom-10 right-10 w-24 h-24 -rotate-6 bg-[#ff70a6] opacity-60 border-4 border-[#242424]" />
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Neobrutalism geometric background elements */}
+      <div className="pointer-events-none fixed -top-20 -left-20 w-60 h-60 bg-primary rotate-12 shadow-shadow opacity-20" />
+      <div className="pointer-events-none fixed top-20 -right-20 w-40 h-40 bg-accent -rotate-12 shadow-shadow opacity-20" />
+      <div className="pointer-events-none fixed bottom-20 left-20 w-32 h-32 bg-secondary rotate-45 shadow-shadow opacity-20" />
+      <div className="pointer-events-none fixed bottom-40 right-40 w-24 h-24 bg-destructive -rotate-45 shadow-shadow opacity-20" />
 
-      <header className="max-w-6xl mx-auto px-4 pt-6 pb-2">
-        <h1 className="inline-block text-3xl sm:text-4xl font-extrabold px-4 py-2 bg-[#ffd670] border-4 border-[#242424] shadow-none">
-          Playful Data Lab
-        </h1>
-        <p className="mt-3 italic bg-[#ffffff] inline-block px-3 py-2 border-4 border-[#242424]">
-          Capture ideas and attach files to structured cards. Tap any card to edit it. Sign in to sync your cards across devices and keep them safe in the cloud.
-        </p>
+      <header className="max-w-7xl mx-auto px-6 pt-8 pb-6">
+        <div className="bg-primary text-primary-foreground rounded-base p-6 shadow-shadow border-4 border-border transform -rotate-1 hover:rotate-0 transition-transform duration-200">
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight">
+            PLAYFUL DATA LAB
+          </h1>
+          <p className="mt-4 text-lg font-bold opacity-90">
+            🚀 Create • Share • Sync • Collaborate
+          </p>
+        </div>
+        <div className="mt-6 bg-card text-card-foreground rounded-base p-4 shadow-shadow border-4 border-border">
+          <p className="font-bold text-lg">
+            💡 Capture ideas, attach files, and organize your thoughts in bold, beautiful cards!
+          </p>
+        </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 pb-16 space-y-8">
+      <main className="max-w-7xl mx-auto px-6 pb-16 space-y-8">
         {/* Authentication and Sync Status */}
         <AuthPanel />
 
         {/* Create note */}
-        <section>
-          <div className="bg-[#ffffff] border-4 border-[#242424] p-4 rounded-sm">
-            <h2 className="text-xl font-bold mb-3">New Card</h2>
-            <div className="space-y-3">
-              <label className="block">
-                <span className="font-semibold">Title</span>
-                <input
-                  value={newNote.title}
-                  onChange={(e) => updateNewNote({ title: e.target.value })}
-                  placeholder="Short title"
-                  className="mt-1 w-full border-4 border-[#242424] px-3 py-2 rounded-sm bg-[#e9ff70] placeholder-[#242424]/60"
+        <Card className="transform rotate-1 hover:rotate-0 transition-transform duration-200">
+          <CardHeader className="bg-secondary text-secondary-foreground">
+            <CardTitle className="text-2xl font-black flex items-center gap-2">
+              ✨ CREATE NEW CARD
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-black uppercase tracking-wide">Title</label>
+              <Input
+                value={newNote.title}
+                onChange={(e) => updateNewNote({ title: e.target.value })}
+                placeholder="What's your big idea?"
+                className="text-lg font-bold"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-black uppercase tracking-wide">Details</label>
+              <Textarea
+                value={newNote.details}
+                onChange={(e) => updateNewNote({ details: e.target.value })}
+                placeholder="Tell me more about it..."
+                rows={4}
+                className="text-base"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-black uppercase tracking-wide">Tags</label>
+              <div className="flex gap-2">
+                <Input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addTag()}
+                  placeholder="Add tags..."
+                  className="flex-1"
                 />
-              </label>
-              <label className="block">
-                <span className="font-semibold">Details</span>
-                <textarea
-                  value={newNote.details}
-                  onChange={(e) => updateNewNote({ details: e.target.value })}
-                  placeholder="What is it about?"
-                  rows={4}
-                  className="mt-1 w-full border-4 border-[#242424] px-3 py-2 rounded-sm bg-[#70d6ff]/50 placeholder-[#242424]/60"
-                />
-              </label>
-              <div>
-                <span className="font-semibold">Tags</span>
-                <div className="mt-1 flex gap-2">
-                  <input
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && addTag()}
-                    placeholder="Add a tag then press Enter"
-                    className="flex-1 border-4 border-[#242424] px-3 py-2 rounded-sm bg-[#ff9770]/40 placeholder-[#242424]/60"
-                  />
-                  <button
-                    onClick={() => addTag()}
-                    className="px-3 py-2 bg-[#ff9770] border-4 border-[#242424] font-semibold"
-                  >
-                    Add
-                  </button>
-                </div>
-                {tagSuggestions.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {tagSuggestions.map(t => (
-                      <button
-                        key={t}
-                        onClick={() => addTag(t)}
-                        className="text-sm px-2 py-1 bg-[#ffd670] border-4 border-[#242424]"
-                      >
-                        #{t}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {(newNote.tags || []).map(t => (
-                    <span key={t} className="text-sm px-2 py-1 bg-[#ff70a6]/70 border-4 border-[#242424]">
-                      #{t}{" "}
-                      <button onClick={() => removeTag(t)} className="ml-1 underline">
-                        remove
-                      </button>
-                    </span>
+                <Button onClick={() => addTag()} variant="outline" className="font-black">
+                  ADD
+                </Button>
+              </div>
+              
+              {tagSuggestions.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {tagSuggestions.map(t => (
+                    <Button
+                      key={t}
+                      onClick={() => addTag(t)}
+                      variant="secondary"
+                      size="sm"
+                      className="text-xs font-bold"
+                    >
+                      #{t}
+                    </Button>
                   ))}
                 </div>
+              )}
+              
+              <div className="flex flex-wrap gap-2 mt-3">
+                {(newNote.tags || []).map(t => (
+                  <Badge key={t} variant="outline" className="font-bold">
+                    #{t}
+                    <Button
+                      onClick={() => removeTag(t)}
+                      variant="ghost"
+                      size="sm"
+                      className="ml-2 h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                    >
+                      ×
+                    </Button>
+                  </Badge>
+                ))}
               </div>
+            </div>
 
-              <label className="block">
-                <span className="font-semibold">Priority</span>
-                <select
-                  value={newNote.priority}
-                  onChange={(e) => updateNewNote({ priority: e.target.value })}
-                  className="mt-1 w-full border-4 border-[#242424] px-3 py-2 rounded-sm bg-[#70d6ff]/40"
-                >
-                  <option>low</option>
-                  <option>medium</option>
-                  <option>high</option>
-                </select>
-              </label>
+            <div className="space-y-2">
+              <label className="text-sm font-black uppercase tracking-wide">Priority</label>
+              <select
+                value={newNote.priority}
+                onChange={(e) => updateNewNote({ priority: e.target.value })}
+                className="w-full rounded-base border-4 border-border bg-card px-4 py-3 text-base font-bold shadow-shadow focus:ring-4 focus:ring-ring"
+              >
+                <option value="low">🟢 LOW</option>
+                <option value="medium">🟡 MEDIUM</option>
+                <option value="high">🔴 HIGH</option>
+              </select>
+            </div>
 
+              <div className="space-y-2">
+              <label className="text-sm font-black uppercase tracking-wide">File Attachments</label>
               <div
-                className={`mt-2 border-4 border-dashed ${dragActive ? "bg-[#ff70a6]/40" : "bg-[#ffffff]"} border-[#242424] rounded-sm p-3 text-sm`}
+                className={`rounded-base border-4 border-dashed border-border p-6 text-center transition-colors ${
+                  dragActive ? "bg-accent/50" : "bg-muted/30"
+                }`}
                 onDragEnter={() => setDragActive(true)}
                 onDragOver={preventDefaults}
                 onDragLeave={() => setDragActive(false)}
                 onDrop={handleDropNew}
               >
-                Drag & drop files here to attach (images, docs, anything)
+                <p className="font-bold text-lg">📎 DRAG FILES HERE</p>
+                <p className="text-sm font-semibold opacity-70">Images, docs, anything!</p>
               </div>
+              
               {newNote._files && Object.keys(newNote._files).length > 0 && (
-                <div className="text-sm mt-2">
-                  Attachments:{" "}
+                <div className="flex flex-wrap gap-2 mt-3">
                   {Object.keys(newNote._files).map(name => (
-                    <span key={name} className="mr-2 px-2 py-1 bg-[#e9ff70] border-4 border-[#242424]">
-                      {name}
-                    </span>
+                    <Badge key={name} variant="secondary" className="font-bold">
+                      📎 {name}
+                    </Badge>
                   ))}
                 </div>
               )}
+            </div>
 
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={saveNewNote}
-                  className="px-4 py-2 bg-[#e9ff70] border-4 border-[#242424] font-bold"
-                >
-                  Save Card
-                </button>
-                <button
-                  onClick={() => {
-                    setNewNote({
-                      title: "",
-                      details: "",
-                      tags: [],
-                      priority: "medium",
-                      _files: {}
-                    })
-                    setTagInput("")
-                  }}
-                  className="px-4 py-2 bg-[#70d6ff] border-4 border-[#242424] font-bold"
-                >
-                  Reset
-                </button>
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <Button
+                onClick={saveNewNote}
+                size="lg"
+                className="flex-1 text-lg font-black transform hover:scale-105 transition-transform"
+              >
+                💾 SAVE CARD
+              </Button>
+              <Button
+                onClick={() => {
+                  setNewNote({
+                    title: "",
+                    details: "",
+                    tags: [],
+                    priority: "medium",
+                    _files: {}
+                  })
+                  setTagInput("")
+                }}
+                variant="outline"
+                size="lg"
+                className="font-black transform hover:scale-105 transition-transform"
+              >
+                🗑️ RESET
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Search section */}
+        <Card className="transform -rotate-1 hover:rotate-0 transition-transform duration-200">
+          <CardHeader className="bg-accent text-accent-foreground">
+            <CardTitle className="text-2xl font-black flex items-center gap-2">
+              🔍 YOUR CARDS COLLECTION
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="🔎 Search titles, details, or #tags..."
+                  className="text-lg font-semibold"
+                />
+              </div>
+              <div className="text-sm font-bold bg-muted rounded-base px-4 py-3 border-2 border-border">
+                📊 {notes.length} CARDS FOUND
               </div>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-        </section>
-
-        {/* Search and list */}
-        <section className="bg-[#ffffff] border-4 border-[#242424] p-4 rounded-sm">
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
-            <h2 className="text-xl font-bold">Your Cards</h2>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search title, details, or #tag"
-              className="w-full sm:w-80 border-4 border-[#242424] px-3 py-2 rounded-sm bg-[#70d6ff]/40 placeholder-[#242424]/60"
-            />
-          </div>
-
-          <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {notes.map(n => (
-              <button
+        {/* Cards grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {notes.map((n, index) => {
+            const priorityEmoji = {
+              low: "🟢",
+              medium: "🟡", 
+              high: "🔴"
+            }[n.priority] || "🟡"
+            
+            const rotationClass = [
+              "transform rotate-1 hover:rotate-0",
+              "transform -rotate-1 hover:rotate-0", 
+              "transform rotate-2 hover:rotate-0",
+              "transform -rotate-2 hover:rotate-0"
+            ][index % 4]
+            
+            return (
+              <Card
                 key={n.id}
+                className={`${rotationClass} transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-lg`}
                 onClick={() => setSelectedId(n.id)}
-                className="text-left bg-[#ffffff] border-4 border-[#242424] rounded-sm hover:translate-x-0.5 hover:-translate-y-0.5 transition-transform"
               >
-                <div className="p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 bg-gradient-to-br from-[#70d6ff] to-[#ff70a6] border-4 border-[#242424] rounded-sm flex items-center justify-center text-white font-bold text-xl">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 bg-primary text-primary-foreground rounded-base flex items-center justify-center font-black text-xl shadow-shadow">
                       {(n.title || "?")[0].toUpperCase()}
                     </div>
-                    <div>
-                      <div className="font-bold">{n.title || "(untitled)"}</div>
-                      <div className="text-sm opacity-80">priority: {n.priority || "medium"}</div>
+                    <Badge variant="secondary" className="font-black">
+                      {priorityEmoji} {(n.priority || "medium").toUpperCase()}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-lg font-black line-clamp-2">
+                    {n.title || "Untitled Card"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="text-sm line-clamp-3 mb-3 opacity-80 font-medium">
+                    {n.details || "No details provided..."}
+                  </p>
+                  
+                  {(n.tags || []).length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {(n.tags || []).slice(0, 3).map(t => (
+                        <Badge key={t} variant="outline" className="text-xs font-bold">
+                          #{t}
+                        </Badge>
+                      ))}
+                      {(n.tags || []).length > 3 && (
+                        <Badge variant="secondary" className="text-xs font-bold">
+                          +{(n.tags || []).length - 3} more
+                        </Badge>
+                      )}
                     </div>
-                  </div>
-                  <p className="mt-2 line-clamp-3 text-sm">{n.details}</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {(n.tags || []).slice(0, 4).map(t => (
-                      <span key={t} className="text-xs px-2 py-1 bg-[#ffd670] border-4 border-[#242424]">
-                        #{t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </button>
-            ))}
-            {notes.length === 0 && (
-              <div className="p-6 bg-[#e9ff70] border-4 border-[#242424] rounded-sm">
-                No cards yet — try the generator or add one above.
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Detail editor */}
-        <section className="bg-[#ffffff] border-4 border-[#242424] p-4 rounded-sm">
-          <h2 className="text-xl font-bold mb-3">Details</h2>
-          {selectedId ? (
-            <DetailEditor noteId={selectedId} onClose={() => setSelectedId("")} />
-          ) : (
-            <div className="p-4 bg-[#70d6ff]/30 border-4 border-dashed border-[#242424]">
-              Select a card to edit it here.
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })}
+          
+          {notes.length === 0 && (
+            <div className="col-span-full">
+              <Card className="bg-muted transform rotate-1">
+                <CardContent className="p-12 text-center">
+                  <p className="text-2xl font-black mb-4">🎯 NO CARDS YET!</p>
+                  <p className="text-lg font-bold opacity-70">
+                    Create your first card above to get started!
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           )}
-        </section>
+        </div>
+
+        {/* Detail editor */}
+        <Card className="transform rotate-1 hover:rotate-0 transition-transform duration-200">
+          <CardHeader className="bg-destructive text-destructive-foreground">
+            <CardTitle className="text-2xl font-black flex items-center gap-2">
+              ✏️ CARD EDITOR
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            {selectedId ? (
+              <DetailEditor noteId={selectedId} onClose={() => setSelectedId("")} />
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-2xl font-black mb-4">👆 SELECT A CARD TO EDIT</p>
+                <p className="font-bold opacity-70">Click on any card above to start editing!</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
       </main>
     </div>
